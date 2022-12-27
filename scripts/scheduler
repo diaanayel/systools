@@ -1,0 +1,104 @@
+#!/bin/bash
+############
+# simple schedule script
+# LICENSE: GNU publuc license
+# crrated by: diaanayel
+#### TODO
+# add email msgs as remainder
+# add intergation with system notifications
+# refactor
+############ 10 line !
+
+set -e
+trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+[[ $? != "0" ]] && trap 'echo "\"${last_command}\" failed with exit code: $?"' EXIT
+set -u
+
+dir=~/.scheduler
+files=()
+target_file=""
+
+main(){
+  get_datum "1.add task\n2.list tasks\n3.mark task as done\n4.remove task\n5.exit" opt
+  case "$opt" in
+    "1") add_task ;;
+    "2") list ;;
+    "3") mark_done ;;
+    "4") remove_task ;;
+    "5") clear && exit ;;
+    *) main ;;
+  esac
+}
+
+cprint(){ # $1 color index, $2 msg
+  colors=("\e[0m" "\e[32m" "\e[31m" "\e[33m")
+  printf "${colors[$2]}$1${colors[0]}";
+}
+
+get_file(){
+  len=1; target_file=""; files=(); num=0
+
+  for file in $(ls $dir/*.{active,done}); do
+    fname=$(basename $file) && cprint "$len $fname\n" 0 \
+    && files+=($fname) && len=$((len + 1))
+  done
+  
+  while [ $num -lt 1 ] || [ ${num} -gt ${len} ]; do
+    get_datum "file number" num
+  done
+  target_file=${files[$((num - 1))]}
+}
+
+list(){
+  get_file && fprint "$target_file"
+
+  [[ "$target_file" == *active ]] && get_datum "\n1.remove task\n2.mark task as done\nanything else to exit\n" opt
+  [[ "$target_file" == *done ]] && get_datum "\n1.remove task\nanything else to exit\n" opt
+  [[ $opt == "1" ]] && remove_task "$target_file" ""
+  [[ $opt == "2" && "$target_file" == *active ]] && mark_done "$target_file"
+}
+
+fprint(){ # $1 filename
+  n=1
+  [[ "$1" == *active ]] && color=1 || color=2
+
+  clear && cprint ">>> $target_file <<<\n" $color 
+  while read line; do
+    cprint "   $n $line\n" $color && n=$((n+1))
+  done <$1
+}
+
+get_datum(){ # #1 msg, $2 variable to set
+  var="" && while [[ -z $var ]]; do cprint "$1\n>>> " 3 && read var ;done
+  eval "$2='$var'"
+}
+
+add_task(){
+  clear
+  get_datum "date (ex: nov21)" date_
+  get_datum "time (ex: 18:20)" time_
+  get_datum "task (ex: doctor's appointment)" task
+
+  fname="$date_.active"
+  echo "$time_ -> $task" >> $fname && echo "added !"
+  main
+}
+
+mark_done(){ # $1 target file (optional)
+  [[ -z $1 ]] && get_file
+  bname=${target_file%.*}
+
+  get_datum "task number" n
+  task=$(sed -n "${n}p" "$target_file")
+  echo $task >> $bname.done
+  remove_task $target_file $n
+}
+
+remove_task(){ # $1 target file, $2 line no. (both optional)
+  [[ -z $1 ]] && get_file
+  [[ -z $2 ]] && get_datum "task number" n || n=$2
+  sed -i "${n}d" $target_file
+}
+
+[ ! -d $dir ] && mkdir $dir
+cd $dir && main

@@ -1,0 +1,37 @@
+#!/bin/python
+
+from requests import get 
+from sys import argv
+import os
+
+def download_page(category, resolution, ratio, page):
+    url = f"https://wallhaven.cc/api/v1/search?q={category}&atleast?{resolution}&ratios?{ratio}&page={page}"
+    data = get(url).json()
+
+    for link in data["data"]:
+        name = os.path.basename(link["path"])
+        open(name, "wb").write(get(link["path"]).content)
+        print(f"downloaded {name}")
+
+# getting data from user
+category = input(">> category: ")
+resolution = input(">> resolution(ex: 1280x720): ")
+ratio = input(">> ratio(16x9): ")
+dl_dir = input(">> directory: ")
+
+# get wallpapers available for specified query
+url = f"https://wallhaven.cc/api/v1/search?q={category}&atleast?{resolution}&ratios?{ratio}"
+data = get(url).json()
+pages_num = int(data["meta"]["last_page"])
+
+#total = get_total_number(category, resolution, ratio)
+pages = int(input(f">> pages (max: {pages_num}, page contains 24 wp): "))
+
+# create download directory and chdir into it
+if not os.path.exists(dl_dir):
+    os.mkdir(dl_dir)
+os.chdir(dl_dir)
+
+# download pages
+for page in range(1,pages+1):
+    download_page(category, resolution, ratio, page)

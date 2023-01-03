@@ -16,7 +16,7 @@ def download_page(category, resolution, ratio, page):
 # getting data from user
 category = input(">> category: ")
 resolution = input(">> resolution(ex: 1280x720): ")
-ratio = input(">> ratio(16x9): ")
+ratio = input(">> ratio(ex: 16x9): ")
 dl_dir = input(">> directory: ")
 
 # get wallpapers available for specified query

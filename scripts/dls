@@ -1,0 +1,70 @@
+#!/bin/bash
+############
+# downloader script
+# LICENSE: GNU publuc license
+# crrated by: diaanayel
+#### TODO
+# 
+#
+# refactor
+############ 10 line !
+
+cprint(){ # $1 msg, $2 color index
+  colors=("\e[0m" "\e[32m" "\e[31m" "\e[33m")
+  printf "${colors[$2]}$1${colors[0]}";
+}
+
+dl_yt_part(){
+  link=${args[1]}
+  resolution=${args[2]}
+  start=${args[3]}
+  length=${args[4]}
+  fname=${args[5]}
+
+  # get audio and video stream links
+	links=$(yt-dlp -f $resolution --youtube-skip-dash-manifest -g $link) && \
+	  readarray -t links <<< $links
+
+	ffmpeg -ss "$start" -i "${links[0]}" -ss "$start" -i "${links[1]}" -t "$end" -map 0:v -map 1:a -c:v copy -c:a copy $fname
+}
+
+dl_yt_list(){
+	mkdir -p "${args[1]}" && cd $_
+  unset args[1]
+
+  yt-dlp -o "%(playlist_index)03d_%(title)s.%(ext)s" "${args[@]}"
+}
+
+dl_yt_video(){
+  yt-dlp "${args[@]}"
+}
+
+dl_file(){ # C for continuing, k for ssl thing(not safe) !
+	curl -k -C - "${args[@]}"
+}
+
+_help(){
+  cprint "A commandline downloading script\n" 1
+  cprint "* yt-dlp, curl and ffmpeg must be installed\n" 3
+  cprint "* the second argument is used to specify which type of file you are downloading\n" 3
+  cprint "* you can not switch the order of arguments\n" 3
+  echo ""
+  cprint "-> yt video: v [youtube-dl argumenta]\n" 3
+  cprint "-> yt playlist: l <download path> [youtube-dl arguments], (it adds numbers to videos)\n" 3
+  cprint "-> file: f [curl arguments], ('-C - -k' are set by default)\n" 3
+  cprint "-> file: p <link> <quality> <start hh:mm:ss> <length hh:ss:mm> <filename>\n" 3
+}
+
+opt=$1
+args=("$@")
+[[ "${#args[@]}" == "1" ]] && _help && exit
+
+unset args[0] # remove opt from the list
+
+case "$opt" in
+  "f") dl_file ;;
+  "l") dl_yt_list ;;
+  "v") dl_yt_video ;;
+  "p") dl_yt_part ;;
+  *) _help ;;
+esac

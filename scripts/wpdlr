@@ -1,5 +1,14 @@
 #!/bin/python
 
+############
+# simple wallpaper downloader script
+# LICENSE: GNU publuc license
+# crrated by: diaanayel
+#### TODO
+# add extra sites for more wallpapers
+# refactor
+############ 10 line !
+
 from requests import get 
 from sys import argv
 import os

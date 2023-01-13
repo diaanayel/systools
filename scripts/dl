@@ -1,0 +1,100 @@
+#!/bin/bash
+############
+# downloader script
+# LICENSE: GNU publuc license
+# crrated by: diaanayel
+#### TODO
+# 
+#
+# refactor
+############ 10 line !
+
+dl_file=~/.dl/dl_command
+
+main(){
+  [[ ! -d ~/.dl ]] && mkdir ~/.dl
+
+  cprint ">>> welcome to cli downloader !\n" 1
+  get_datum "1.file\n2.youtube video\n\
+3.youtube playlist\n4.part of youtube video\n\
+5.resume last download\n6.exit" opt
+
+  case "$opt" in
+    "1") dl_file ;;
+    "2") dl_yt_video ;;
+    "3") dl_yt_list ;;
+    "4") dl_yt_part ;;
+    "5") resume_last_download ;;
+    "6") exit ;;
+    *) main ;;
+  esac
+}
+
+get_datum(){ # #1 msg, $2 variable to set
+  var="" && while [[ -z $var ]]; do cprint "$1, [q to abort]\n>>> " 3 && read var ;done
+  [[ $var == "q" ]] && exit
+  eval "$2='$var'"
+}
+
+cprint(){ # $1 msg, $2 color index
+  colors=("\e[0m" "\e[32m" "\e[31m" "\e[33m")
+  printf "${colors[$2]}$1${colors[0]}";
+}
+
+resume_last_download(){
+  if [[ -f $dl_file ]]; then
+    $(cat $dl_file) && \
+      rm -f $dl_file
+  else
+    cprint "no downloads to resume\n" 2
+  fi
+}
+
+dl_yt_part(){
+  get_datum "link" link
+  get_datum "quality/resolution(youtube-dl)" resolution
+  get_datum "start(hh:mm:ss)" start
+  get_datum "length(hh:mm:ss)" end
+  get_datum "file name" fname
+
+  # get audio and video stream links
+	links=$(yt-dlp -f $resolution --youtube-skip-dash-manifest -g $link)
+	readarray -t links <<< $links
+
+	echo ffmpeg -ss "$start" -i "${links[0]}" -ss "$start" -i "${links[1]}" -t "$end" -map 0:v -map 1:a -c copy "$fname" > $dl_file && \
+    resume_last_download
+}
+
+dl_yt_list(){
+  get_datum "download path(relative/absolute)" dir
+	mkdir -p "$dir"
+
+  get_datum "link" link
+  get_datum "arguments(youtube-dl)" args
+
+  echo yt-dlp -o "$dir/%(playlist_index)03d_%(title)s.%(ext)s" $link $args > $dl_file && \
+    resume_last_download
+}
+
+dl_yt_video(){
+  get_datum "download path(relative/absolute)" dir
+	mkdir -p "$dir"
+
+  get_datum "link" link
+  get_datum "arguments(youtube-dl)" args
+
+  echo yt-dlp --no-playlist --output "$dir/%(title)s.%(ext)s" $link $args > $dl_file && \
+    resume_last_download
+}
+
+dl_file(){ # C for continuing, k for ssl thing(not safe) !
+  get_datum "download path(relative/absolute)" dir
+	mkdir -p "$dir"
+  get_datum "link" link
+  get_datum "file name" fname
+
+	echo curl -k -C - $args $link -o "$dir/$fname" > $dl_file && \
+    resume_last_download
+}
+
+main

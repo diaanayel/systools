@@ -40,7 +40,7 @@ get_file(){
 
   for file in $(ls $dir/*.{active,done}); do
     fname=$(basename $file) && cprint "$len $fname\n" 0 \
-    && files+=($fname) && len=$((len + 1))
+      && files+=($fname) && len=$((len + 1))
   done
   
   while [ $num -lt 1 ] || [ ${num} -gt ${len} ]; do

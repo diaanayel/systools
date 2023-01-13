@@ -8,11 +8,11 @@
 * [] intergation with system notifications
 
 ## wallpaper downloader (python)
-* [x] category
-* [x] download path
-* [x] number
-* [x] number
-* [] extra sites for more wallpapers
+[x] category
+[x] download path
+[x] number
+[x] number
+[] extra sites for more wallpapers
 
 ## downloader script (bash)
 * ffmpeg, curl, yt-dlp/youtube-dl used

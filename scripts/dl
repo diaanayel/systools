@@ -14,7 +14,7 @@ dl_file=~/.dl/dl_command
 main(){
   [[ ! -d ~/.dl ]] && mkdir ~/.dl
 
-  cprint ">>> welcome to cli downloader !\n" 1
+  cprint ">>> cli downloader !\n" 1
   get_datum "1.file\n2.youtube video\n\
 3.youtube playlist\n4.part of youtube video\n\
 5.resume last download\n6.exit" opt

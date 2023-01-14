@@ -12,7 +12,10 @@
 * [x] download path
 * [x] number
 * [x] number
+* [ ] change the script into bash
 * [ ] extra sites for more wallpapers
+* [ ] add image thumbnails preview without browser(maybe sxiv can beused !)
+
 
 ## downloader script (bash)
 * ffmpeg, curl, yt-dlp/youtube-dl used

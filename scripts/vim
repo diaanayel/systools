@@ -1,0 +1,7 @@
+to copy/paste from vim to system clipboard
+map <C-key> :w ! command to copy/paste according to system<CR>
+
+better to be placed in a project directory
+map <C-key> :! ./bb  <CR>
+bb is the build script which may prompts me to choose a test or run normally or whatever.
+

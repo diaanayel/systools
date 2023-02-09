@@ -1,0 +1,29 @@
+#!/bin/bash
+
+sspath=/sdcard/Pictures/Screenshots
+opt=$1
+newname=$2
+
+
+main(){
+  case "$opt" in
+    "r") rename ;;
+    "c") _clear ;;
+    *) _help ;;
+  esac
+}
+
+rename(){
+  oldname=$(ls $sspath | grep -i Screenshot* | sort -nr | head -n 1)
+  [[ -z $newname ]] && echo "provide name in \$1" || mv $sspath/$oldname $sspath/$newname.png
+}
+
+_clear(){
+  rm -f $sspath/Screenshot*
+}
+_help(){
+  echo "ss c -> will delete all ss from ss dir"
+  echo "ss r newname -> rename last captured ss"
+}
+
+main

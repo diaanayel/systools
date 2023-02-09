@@ -1,0 +1,6 @@
+#!/bin/bash
+link=$1
+
+target=$(echo "$link" | sed 's/tree\/master/trunk/')
+
+svn export $target
